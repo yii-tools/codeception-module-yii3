@@ -14,7 +14,7 @@ return [
             ],
             'di-web' => [
                 '$di',
-                'web/*.php'
+                'web/*.php',
             ],
             'di-console' => [
                 '$di',
