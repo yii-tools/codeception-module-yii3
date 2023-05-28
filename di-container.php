@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'config-plugin-environments' => [
-        'tests-codeception' => [
+        'test-codeception' => [
             // Configuration Yii3
             'params' => 'params.php',
             'params-web' => ['$params'],
