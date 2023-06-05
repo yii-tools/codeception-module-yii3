@@ -10,7 +10,6 @@ use Codeception\Module\PhpBrowser;
 use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
 use Symfony\Component\Console\Tester\CommandTester;
 use Yiisoft\Config\Config;
 use Yiisoft\Config\ConfigPaths;
@@ -119,7 +118,7 @@ final class Yii3 extends Module
      */
     public function migrationDown(): bool
     {
-        $command = $this->createCommand('migrate/down');
+        $command = $this->createCommand('migrate:down');
         $command->setInputs(['yes']);
         return (bool) $command->execute(['-a' => '-a']);
     }
@@ -129,7 +128,7 @@ final class Yii3 extends Module
      */
     public function migrationUp(): bool
     {
-        $command = $this->createCommand('migrate/up');
+        $command = $this->createCommand('migrate:up');
         $command->setInputs(['yes']);
         return (bool) $command->execute([]);
     }
