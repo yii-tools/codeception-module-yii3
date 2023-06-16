@@ -7,6 +7,7 @@ namespace Yii\Codeception\Module;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module;
 use Codeception\Module\PhpBrowser;
+use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -52,6 +53,20 @@ final class Yii3 extends Module
         parent::__construct($moduleContainer, $config);
 
         $this->createContainer();
+    }
+
+    public function _before(TestInterface $test): void
+    {
+        /** @var UrlGeneratorInterface $urlGenerator */
+        $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
+        /** @var string $argumentRoute */
+        $argumentRoute = $this->getConfig('argumentRoute') ?? '';
+        /** @var string $locale */
+        $locale = $this->getConfig('locale') ?? '';
+
+        if ($argumentRoute !== '') {
+            $urlGenerator->setDefaultArgument($argumentRoute, $locale);
+        }
     }
 
     /**
