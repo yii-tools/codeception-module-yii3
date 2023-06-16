@@ -68,7 +68,6 @@ final class Yii3 extends Module
         $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
         /** @var PhpBrowser $phpBrowser */
         $phpBrowser = $this->phpBrowser();
-
         $phpBrowser->amOnPage($urlGenerator->generate($url, $params));
     }
 
