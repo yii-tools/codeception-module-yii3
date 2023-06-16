@@ -7,11 +7,11 @@ namespace Yii\Codeception\Module;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module;
 use Codeception\Module\PhpBrowser;
-use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Yiisoft\Config\Config;
+use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Config\ConfigPaths;
 use Yiisoft\Config\Modifier\RecursiveMerge;
 use Yiisoft\Di\Container;
@@ -36,7 +36,7 @@ final class Yii3 extends Module
         'vendor' => 'vendor',
     ];
     private ContainerInterface $container;
-    private array $params = [];
+    private ConfigInterface $configPlugin;
 
     /**
      * Constructor.
@@ -54,20 +54,6 @@ final class Yii3 extends Module
         $this->createContainer();
     }
 
-    public function _before(TestInterface $test): void
-    {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
-        /** @var string $argumentRoute */
-        $argumentRoute = $this->getConfig('argumentRoute') ?? '';
-        /** @var string $locale */
-        $locale = $this->getConfig('locale') ?? '';
-
-        if ($argumentRoute !== '' && $locale !== '') {
-            $urlGenerator->setDefaultArgument($argumentRoute, $locale);
-        }
-    }
-
     /**
      * Navigates to the specified route.
      *
@@ -82,7 +68,6 @@ final class Yii3 extends Module
         $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
         /** @var PhpBrowser $phpBrowser */
         $phpBrowser = $this->phpBrowser();
-
         $phpBrowser->amOnPage($urlGenerator->generate($url, $params));
     }
 
@@ -98,6 +83,14 @@ final class Yii3 extends Module
     }
 
     /**
+     * Return the config instance for Yii3 application.
+     */
+    public function getConfigPlugin(): ConfigInterface
+    {
+        return $this->configPlugin;
+    }
+
+    /**
      * Return the container instance for Yii3 application.
      */
     public function getContainer(): ContainerInterface
@@ -106,21 +99,13 @@ final class Yii3 extends Module
     }
 
     /**
-     * Return the params array for Yii3 application.
-     */
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    /**
      * Runs migration down.
      */
     public function migrationDown(): bool
     {
         $command = $this->createCommand('migrate:down');
-        $command->setInputs(['yes']);
-        return (bool) $command->execute(['-a' => '-a']);
+
+        return $command->execute(['-a' => '-a']) === 0;
     }
 
     /**
@@ -129,8 +114,8 @@ final class Yii3 extends Module
     public function migrationUp(): bool
     {
         $command = $this->createCommand('migrate:up');
-        $command->setInputs(['yes']);
-        return (bool) $command->execute([]);
+
+        return $command->execute([]) === 0;
     }
 
     /**
@@ -140,9 +125,6 @@ final class Yii3 extends Module
      */
     private function createCommand(string $command): CommandTester
     {
-        /** @var array $params */
-        $params = $this->params['yiisoft/yii-console'] ?? [];
-
         /** @var array $namespaceMigration */
         $namespaceMigration = $this->getConfig('namespaceMigration') ?? [];
 
@@ -152,14 +134,6 @@ final class Yii3 extends Module
 
         /** @var Application $application */
         $application = $this->get(Application::class);
-
-        if (array_key_exists('commands', $params)) {
-            /** @var array $params */
-            $params = $params['commands'];
-        }
-
-        //$loader = new ContainerCommandLoader($this->container, $params);
-        //$application->setCommandLoader($loader);
 
         return new CommandTester($application->find($command));
     }
@@ -179,17 +153,16 @@ final class Yii3 extends Module
         /** @var string $vendor */
         $vendor = $this->getConfig('vendor');
 
-        $config = new Config(
+        $this->configPlugin = new Config(
             new ConfigPaths($configPath, 'config', $vendor),
             $environment,
             [RecursiveMerge::groups('params'), RecursiveMerge::groups('events')]
         );
 
-        $definitions = array_merge($config->get('di-console'), $config->get('di-web'));
+        $definitions = array_merge($this->configPlugin->get('di-console'), $this->configPlugin->get('di-web'));
         $containerConfig = ContainerConfig::create()->withDefinitions($definitions);
 
         $this->container = new Container($containerConfig);
-        $this->params = $config->get('params');
     }
 
     /**
