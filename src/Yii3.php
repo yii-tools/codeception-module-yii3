@@ -7,7 +7,6 @@ namespace Yii\Codeception\Module;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module;
 use Codeception\Module\PhpBrowser;
-use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
