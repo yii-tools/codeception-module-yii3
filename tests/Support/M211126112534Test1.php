@@ -9,7 +9,7 @@ use Yiisoft\Db\Exception\NotSupportedException;
 use Yiisoft\Yii\Db\Migration\MigrationBuilder;
 use Yiisoft\Yii\Db\Migration\RevertibleMigrationInterface;
 
-final class M211126112534Identity implements RevertibleMigrationInterface
+final class M211126112534Test1 implements RevertibleMigrationInterface
 {
     /**
      * @throws InvalidConfigException
@@ -24,10 +24,9 @@ final class M211126112534Identity implements RevertibleMigrationInterface
         }
 
         $b->createTable(
-            '{{%identity}}',
+            '{{%test_1}}',
             [
                 'id' => $b->primaryKey()->notNull()->unsigned(),
-                'auth_key' => $b->string(32)->defaultValue(''),
             ],
             $tableOptions
         );
@@ -39,6 +38,6 @@ final class M211126112534Identity implements RevertibleMigrationInterface
      */
     public function down(MigrationBuilder $b): void
     {
-        $b->dropTable('{{%identity}}');
+        $b->dropTable('{{%test_1}}');
     }
 }
