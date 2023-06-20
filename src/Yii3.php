@@ -11,6 +11,7 @@ use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\Config;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Config\ConfigPaths;
@@ -34,6 +35,7 @@ final class Yii3 extends Module
         'environment' => null,
         'namespaceMigration' => [],
         'locale' => 'en',
+        'runtimePath' => '',
         'vendor' => 'vendor',
     ];
     private ContainerInterface $container;
@@ -115,22 +117,26 @@ final class Yii3 extends Module
 
     /**
      * Runs migration down.
+     *
+     * @param array $params The command parameters.
      */
-    public function migrationDown(): bool
+    public function migrationDown(array $params = []): bool
     {
         $command = $this->createCommand('migrate:down');
 
-        return $command->execute(['-a' => '-a']) === 0;
+        return $command->execute($params) === 0;
     }
 
     /**
      * Runs migration up.
+     *
+     * @param array $params The command parameters.
      */
-    public function migrationUp(): bool
+    public function migrationUp(array $params = []): bool
     {
         $command = $this->createCommand('migrate:up');
 
-        return $command->execute([]) === 0;
+        return $command->execute($params) === 0;
     }
 
     /**
@@ -178,6 +184,8 @@ final class Yii3 extends Module
         $containerConfig = ContainerConfig::create()->withDefinitions($definitions);
 
         $this->container = new Container($containerConfig);
+
+        $this->setAliases();
     }
 
     /**
@@ -196,5 +204,14 @@ final class Yii3 extends Module
     private function phpBrowser(): Module
     {
         return $this->getModule('PhpBrowser');
+    }
+
+    private function setAliases(): void
+    {
+        if ($this->getConfig('runtimePath') !== '') {
+            /** @var Aliases $aliases */
+            $aliases = $this->container->get(Aliases::class);
+            $aliases->set('@runtime', (string) $this->getConfig('runtimePath'));
+        }
     }
 }
