@@ -17,6 +17,7 @@
         "codeception/module-phpbrowser": "^3.0",
         "psr/container": "^2.0",
         "symfony/console": "^6.0",
+        "yiisoft/aliases": "^3.0",
         "yiisoft/config": "^1.3",
         "yiisoft/di": "^1.2",
         "yiisoft/router": "^3.0",
