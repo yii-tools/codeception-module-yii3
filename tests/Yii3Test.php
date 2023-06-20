@@ -12,6 +12,7 @@ use Codeception\TestInterface;
 use Psr\Container\ContainerInterface;
 use Yii\Codeception\Module\Yii3;
 use Yii\Support\Assert;
+use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\UrlGeneratorInterface;
 
@@ -32,6 +33,7 @@ final class Yii3Test extends TestCase
                 'configPath' => __DIR__,
                 'environment' => 'test-codeception',
                 'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
+                'runtimePath' => __DIR__ . '/runtime',
                 'vendor' => '../vendor',
             ],
         );
@@ -90,5 +92,13 @@ final class Yii3Test extends TestCase
     public function testMigrationUp(): void
     {
         $this->assertTrue($this->module->migrationUp());
+    }
+
+    public function testRuntimePath(): void
+    {
+        /** @var Aliases $aliases */
+        $aliases = $this->module->get(Aliases::class);
+
+        $this->assertSame(__DIR__ . '/runtime', $aliases->get('@runtime'));
     }
 }
