@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Yii\Framework\Runner\ConsoleApplication;
+
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+
+/**
+ * Run console application runner.
+ */
+(new ConsoleApplication())->withRootPath(dirname(__DIR__, 2))->run();

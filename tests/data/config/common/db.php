@@ -10,7 +10,7 @@ return [
     ConnectionInterface::class => [
         'class' => SqliteConnection::class,
         '__construct()' => [
-            new SqliteDriver('sqlite:' . __DIR__ . 'yii-codeception-module-yii3.sq3'),
+            new SqliteDriver('sqlite:' . dirname(__DIR__, 3) . '/_output/yii3.sq3'),
         ],
     ],
 ];

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yii\Codeception\Module\Tests;
 
-use Codeception\Exception\ModuleException;
+use Codeception\Configuration;
 use Codeception\Lib\Di;
 use Codeception\Lib\ModuleContainer;
 use Codeception\PHPUnit\TestCase;
@@ -12,6 +12,7 @@ use Psr\Container\ContainerInterface;
 use Yii\Codeception\Module\Yii3;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
+use Yiisoft\Router\RouteNotFoundException;
 use Yiisoft\Router\UrlGeneratorInterface;
 
 /**
@@ -25,16 +26,22 @@ final class Yii3Test extends TestCase
     {
         parent::setUp();
 
+        // configure output path
+        Configuration::append(['paths' => ['output' => __DIR__ . '/_output']]);
+
+        // configure yii3 module
         $this->module = new Yii3(
             new ModuleContainer(new Di(), []),
             [
-                'configPath' => __DIR__,
-                'environment' => 'test-codeception',
+                'configPath' => 'tests/data/config',
+                'rootPath' => dirname(__DIR__),
                 'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
                 'runtimePath' => __DIR__ . '/runtime',
-                'vendor' => '../vendor',
+                'vendor' => '../../../vendor',
             ],
         );
+        $this->module->_initialize();
+        $this->module->setArgumentRoute('_language');
     }
 
     public function tearDown(): void
@@ -46,8 +53,8 @@ final class Yii3Test extends TestCase
 
     public function testAmOnRoute(): void
     {
-        $this->expectException(ModuleException::class);
-        $this->expectExceptionMessage("Codeception\Module: Module PhpBrowser couldn't be connected");
+        $this->expectException(RouteNotFoundException::class);
+        $this->expectExceptionMessage('Cannot generate URI for route "site/index"; route not found.');
 
         $this->module->amOnRoute('site/index');
     }
@@ -78,6 +85,42 @@ final class Yii3Test extends TestCase
     public function testMigrationUp(): void
     {
         $this->assertTrue($this->module->migrationUp());
+    }
+
+    public function testSeeTranslated(): void
+    {
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslated('site.description');
+        $this->module->see('The high-performance PHP framework');
+    }
+
+    public function testSeeTranslatedWithLocale(): void
+    {
+        $this->module->setLocale('es');
+
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslated('site.description');
+        $this->module->see('El framework PHP de alto rendimiento');
+    }
+
+    public function testSeeTranslatedInTitle(): void
+    {
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslatedInTitle('site.menu.home');
+        $this->module->seeInTitle('Home');
+    }
+
+    public function testSeeTranslatedInTitleWithLocale(): void
+    {
+        $this->module->setLocale('es');
+
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslatedInTitle('site.menu.home');
+        $this->module->seeInTitle('Inicio');
     }
 
     public function testRuntimePath(): void

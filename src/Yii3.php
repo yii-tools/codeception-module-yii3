@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Yii\Codeception\Module;
 
-use Codeception\Lib\InnerBrowser;
 use Codeception\Lib\ModuleContainer;
-use Codeception\Module;
 use Codeception\Module\PhpBrowser;
 use ErrorException;
 use Psr\Container\ContainerInterface;
@@ -29,17 +27,35 @@ use function array_merge;
 /**
  * Yii3 is a Codeception module for testing Yii3 applications.
  */
-final class Yii3 extends InnerBrowser
+final class Yii3 extends PhpBrowser
 {
     private string $argumentRoute = '_language';
     private string $locale = 'en';
 
     protected array $config = [
-        'configPath' => null,
+        // yii3 module config
+        'configPath' => 'config',
         'environment' => null,
         'namespaceMigration' => [],
+        'rootPath' => null,
         'runtimePath' => '',
-        'vendor' => 'vendor',
+        'vendorPath' => 'vendor',
+
+        // curl module config
+        'curl' => [],
+        'expect' => false,
+        'handler' => 'curl',
+        'headers' => [],
+        'middleware' => null,
+        'refresh_max_interval' => 10,
+        'timeout' => 30,
+        'url' => 'http://localhost:8080',
+        'verify' => false,
+
+        // required defaults (not recommended to change)
+        'allow_redirects' => false,
+        'http_errors' => false,
+        'cookies' => true,
     ];
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
@@ -76,9 +92,7 @@ final class Yii3 extends InnerBrowser
         $urlGenerator->setDefaultArgument($this->argumentRoute, $this->locale);
         $this->translator->setLocale($this->locale);
 
-        /** @var PhpBrowser $phpBrowser */
-        $phpBrowser = $this->phpBrowser();
-        $phpBrowser->amOnPage($urlGenerator->generate($url, $params));
+        $this->amOnPage($urlGenerator->generate($url, $params));
     }
 
     /**
@@ -133,14 +147,34 @@ final class Yii3 extends InnerBrowser
     }
 
     /**
-     * Translates a message into the specified language.
+     * Verifies that a translated text is present on the current page.
      *
-     * @param string $id The message ID.
-     * @param string|null $category The message category.
+     * @param string|Stringable $id The ID of the message to translate.
+     * @param string|null $category The message category (optional).
+     * @param array|string|null $selector Selector to search for the text on the page (optional).
+     *
+     * @throws \Codeception\Exception\ElementNotFound If the text is not present on the page.
      */
     public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
     {
-        return $this->see($this->translator->translate($id, category: $category), $selector);
+        $translatedText = $this->translator->translate($id, category: $category);
+
+        $this->see($translatedText, $selector);
+    }
+
+    /**
+     * Verifies that a translated text is present in the page title.
+     *
+     * @param string|Stringable $id The ID of the message to translate.
+     * @param string|null $category The message category (optional).
+     *
+     * @throws \Codeception\Exception\ElementNotFound If the text is not present in the page title.
+     */
+    public function seeTranslatedInTitle(string|Stringable $id, string $category = null): void
+    {
+        $translatedText = $this->translator->translate($id, category: $category);
+
+        $this->seeInTitle($translatedText);
     }
 
     public function setArgumentRoute(string $argumentRoute): void
@@ -183,13 +217,16 @@ final class Yii3 extends InnerBrowser
     {
         /** @var string $configPath */
         $configPath = $this->getConfig('configPath') ?? '';
+        /** @var string $rootPath */
+        $rootPath = $this->getConfig('rootPath') ?? '';
+
         /** @var string|null $environment */
-        $environment = $this->getConfig('environment');
+        $environment = $this->getConfig('environment') ?? '';
         /** @var string $vendor */
-        $vendor = $this->getConfig('vendor');
+        $vendorPath = $this->getConfig('vendorPath') ?? '';
 
         $this->configPlugin = new Config(
-            new ConfigPaths($configPath, 'config', $vendor),
+            new ConfigPaths($rootPath, $configPath, $vendorPath),
             $environment,
             [RecursiveMerge::groups('params'), RecursiveMerge::groups('events')]
         );
@@ -211,14 +248,6 @@ final class Yii3 extends InnerBrowser
     private function getConfig(string $key): mixed
     {
         return $this->config[$key] ?? null;
-    }
-
-    /**
-     * Gets the PhpBrowser module instance.
-     */
-    private function phpBrowser(): Module
-    {
-        return $this->getModule('PhpBrowser');
     }
 
     private function setAliases(): void
