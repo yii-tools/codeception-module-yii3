@@ -15,7 +15,6 @@ use Yii\Support\Assert;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\UrlGeneratorInterface;
-use Yiisoft\Translator\TranslatorInterface;
 
 /**
  * Test for Yii3 module.
