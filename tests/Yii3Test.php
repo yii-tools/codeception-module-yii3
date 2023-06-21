@@ -15,7 +15,6 @@ use Yii\Codeception\Module\Yii3;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\RouteNotFoundException;
-use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
 /**
@@ -66,7 +65,6 @@ final class Yii3Test extends TestCase
     {
         $this->assertInstanceOf(MigrationService::class, $this->module->get(MigrationService::class));
         $this->assertInstanceOf(RequestFactory::class, $this->module->get(RequestFactoryInterface::class));
-
     }
 
     public function testGetConfigPlugin(): void
