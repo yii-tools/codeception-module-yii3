@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Yii\Codeception\Module;
 
 use Codeception\Lib\ModuleContainer;
-use Codeception\Module;
 use Codeception\Module\PhpBrowser;
-use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
+use Stringable;
 use Symfony\Component\Console\Tester\CommandTester;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\Config;
@@ -19,6 +18,7 @@ use Yiisoft\Config\Modifier\RecursiveMerge;
 use Yiisoft\Di\Container;
 use Yiisoft\Di\ContainerConfig;
 use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Translator\TranslatorInterface;
 use Yiisoft\Yii\Console\Application;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
@@ -27,19 +27,39 @@ use function array_merge;
 /**
  * Yii3 is a Codeception module for testing Yii3 applications.
  */
-final class Yii3 extends Module
+final class Yii3 extends PhpBrowser
 {
+    private string $argumentRoute = '_language';
+    private string $locale = 'en';
+
     protected array $config = [
-        'argumentRoute' => '_language',
-        'configPath' => null,
-        'environment' => null,
+        // yii3 module config
+        'configPath' => 'config',
+        'environment' => '',
         'namespaceMigration' => [],
-        'locale' => 'en',
+        'rootPath' => '',
         'runtimePath' => '',
-        'vendor' => 'vendor',
+        'vendorPath' => 'vendor',
+
+        // curl module config
+        'curl' => [],
+        'expect' => false,
+        'handler' => 'curl',
+        'headers' => [],
+        'middleware' => null,
+        'refresh_max_interval' => 10,
+        'timeout' => 30,
+        'url' => 'http://localhost:8080',
+        'verify' => false,
+
+        // required defaults (not recommended to change)
+        'allow_redirects' => false,
+        'http_errors' => false,
+        'cookies' => true,
     ];
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
+    private TranslatorInterface $translator;
 
     /**
      * Constructor.
@@ -57,20 +77,6 @@ final class Yii3 extends Module
         $this->createContainer();
     }
 
-    public function _before(TestInterface $test): void
-    {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
-        /** @var string $argumentRoute */
-        $argumentRoute = $this->getConfig('argumentRoute') ?? '';
-        /** @var string $locale */
-        $locale = $this->getConfig('locale') ?? '';
-
-        if ($argumentRoute !== '') {
-            $urlGenerator->setDefaultArgument($argumentRoute, $locale);
-        }
-    }
-
     /**
      * Navigates to the specified route.
      *
@@ -83,9 +89,10 @@ final class Yii3 extends Module
     {
         /** @var UrlGeneratorInterface $urlGenerator */
         $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
-        /** @var PhpBrowser $phpBrowser */
-        $phpBrowser = $this->phpBrowser();
-        $phpBrowser->amOnPage($urlGenerator->generate($url, $params));
+        $urlGenerator->setDefaultArgument($this->argumentRoute, $this->locale);
+        $this->translator->setLocale($this->locale);
+
+        $this->amOnPage($urlGenerator->generate($url, $params));
     }
 
     /**
@@ -140,6 +147,43 @@ final class Yii3 extends Module
     }
 
     /**
+     * Verifies that a translated text is present on the current page.
+     *
+     * @param string|Stringable $id The ID of the message to translate.
+     * @param string|null $category The message category (optional).
+     * @param array|string|null $selector Selector to search for the text on the page (optional).
+     *
+     * @throws \Codeception\Exception\ElementNotFound If the text is not present on the page.
+     */
+    public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
+    {
+        $this->see($this->translator->translate($id, category: $category), $selector);
+    }
+
+    /**
+     * Verifies that a translated text is present in the page title.
+     *
+     * @param string|Stringable $id The ID of the message to translate.
+     * @param string|null $category The message category (optional).
+     *
+     * @throws \Codeception\Exception\ElementNotFound If the text is not present in the page title.
+     */
+    public function seeTranslatedInTitle(string|Stringable $id, string $category = null): void
+    {
+        $this->seeInTitle($this->translator->translate($id, category: $category));
+    }
+
+    public function setArgumentRoute(string $argumentRoute): void
+    {
+        $this->argumentRoute = $argumentRoute;
+    }
+
+    public function setLocale(string $locale): void
+    {
+        $this->locale = $locale;
+    }
+
+    /**
      * Creates a CommandTester instance for the specified command.
      *
      * @param string $command The command name.
@@ -168,14 +212,16 @@ final class Yii3 extends Module
     private function createContainer(): void
     {
         /** @var string $configPath */
-        $configPath = $this->getConfig('configPath') ?? '';
-        /** @var string|null $environment */
+        $configPath = $this->getConfig('configPath');
+        /** @var string $rootPath */
+        $rootPath = $this->getConfig('rootPath');
+        /** @var string $environment */
         $environment = $this->getConfig('environment');
-        /** @var string $vendor */
-        $vendor = $this->getConfig('vendor');
+        /** @var string $vendorPath */
+        $vendorPath = $this->getConfig('vendorPath');
 
         $this->configPlugin = new Config(
-            new ConfigPaths($configPath, 'config', $vendor),
+            new ConfigPaths($rootPath, $configPath, $vendorPath),
             $environment,
             [RecursiveMerge::groups('params'), RecursiveMerge::groups('events')]
         );
@@ -184,6 +230,7 @@ final class Yii3 extends Module
         $containerConfig = ContainerConfig::create()->withDefinitions($definitions);
 
         $this->container = new Container($containerConfig);
+        $this->translator = $this->container->get(TranslatorInterface::class);
 
         $this->setAliases();
     }
@@ -196,14 +243,6 @@ final class Yii3 extends Module
     private function getConfig(string $key): mixed
     {
         return $this->config[$key] ?? null;
-    }
-
-    /**
-     * Gets the PhpBrowser module instance.
-     */
-    private function phpBrowser(): Module
-    {
-        return $this->getModule('PhpBrowser');
     }
 
     private function setAliases(): void

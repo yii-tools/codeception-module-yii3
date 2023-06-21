@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Yii\Codeception\Module\Tests;
 
-use Codeception\Exception\ModuleException;
+use Codeception\Configuration;
 use Codeception\Lib\Di;
 use Codeception\Lib\ModuleContainer;
 use Codeception\PHPUnit\TestCase;
-use Codeception\TestInterface;
+use HttpSoft\Message\RequestFactory;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Yii\Codeception\Module\Yii3;
-use Yii\Support\Assert;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
-use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Router\RouteNotFoundException;
+use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
 /**
  * Test for Yii3 module.
@@ -27,16 +28,22 @@ final class Yii3Test extends TestCase
     {
         parent::setUp();
 
+        // configure output path
+        Configuration::append(['paths' => ['output' => __DIR__ . '/_output']]);
+
+        // configure yii3 module
         $this->module = new Yii3(
             new ModuleContainer(new Di(), []),
             [
-                'configPath' => __DIR__,
-                'environment' => 'test-codeception',
+                'configPath' => 'tests/data/config',
+                'rootPath' => dirname(__DIR__),
                 'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
                 'runtimePath' => __DIR__ . '/runtime',
-                'vendor' => '../vendor',
+                'vendor' => '../../../vendor',
             ],
         );
+        $this->module->_initialize();
+        $this->module->setArgumentRoute('_language');
     }
 
     public function tearDown(): void
@@ -48,27 +55,16 @@ final class Yii3Test extends TestCase
 
     public function testAmOnRoute(): void
     {
-        $this->expectException(ModuleException::class);
-        $this->expectExceptionMessage("Codeception\Module: Module PhpBrowser couldn't be connected");
+        $this->expectException(RouteNotFoundException::class);
+        $this->expectExceptionMessage('Cannot generate URI for route "site/index"; route not found.');
 
         $this->module->amOnRoute('site/index');
     }
 
-    public function testBefore(): void
-    {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->module->get(UrlGeneratorInterface::class);
-        /** @var TestInterface $testInterface */
-        $testInterface = $this->createMock(TestInterface::class);
-
-        $this->module->_before($testInterface);
-
-        $this->assertSame(['_language' => 'en'], Assert::inaccessibleProperty($urlGenerator, 'defaultArguments'));
-    }
-
     public function testGet(): void
     {
-        $this->assertInstanceOf(UrlGeneratorInterface::class, $this->module->get(UrlGeneratorInterface::class));
+        $this->assertInstanceOf(MigrationService::class, $this->module->get(MigrationService::class));
+        $this->assertInstanceOf(RequestFactory::class, $this->module->get(RequestFactoryInterface::class));
     }
 
     public function testGetConfigPlugin(): void
@@ -92,6 +88,38 @@ final class Yii3Test extends TestCase
     public function testMigrationUp(): void
     {
         $this->assertTrue($this->module->migrationUp());
+    }
+
+    public function testSeeTranslated(): void
+    {
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslated('site.description');
+    }
+
+    public function testSeeTranslatedWithLocale(): void
+    {
+        $this->module->setLocale('es');
+
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslated('site.description');
+    }
+
+    public function testSeeTranslatedInTitle(): void
+    {
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslatedInTitle('site.menu.home');
+    }
+
+    public function testSeeTranslatedInTitleWithLocale(): void
+    {
+        $this->module->setLocale('es');
+
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslatedInTitle('site.menu.home');
     }
 
     public function testRuntimePath(): void
