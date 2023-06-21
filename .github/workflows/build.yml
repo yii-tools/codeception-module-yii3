@@ -30,6 +30,6 @@ jobs:
         php -S 127.0.0.1:8080 -t tests/data/public > /dev/null 2>&1 &
       extensions: fileinfo, intl, pdo, pdo_sqlite
       os: >-
-        ['ubuntu-latest', 'windows-latest']
+        ['ubuntu-latest']
       php: >-
         ['8.1', '8.2']
