@@ -19,6 +19,7 @@ use Yiisoft\Config\Modifier\RecursiveMerge;
 use Yiisoft\Di\Container;
 use Yiisoft\Di\ContainerConfig;
 use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Translator\TranslatorInterface;
 use Yiisoft\Yii\Console\Application;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
@@ -40,6 +41,7 @@ final class Yii3 extends Module
     ];
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
+    private TranslatorInterface $translator;
 
     /**
      * Constructor.
@@ -116,6 +118,14 @@ final class Yii3 extends Module
     }
 
     /**
+     * Return the translator instance for Yii3 application.
+     */
+    public function getTranslator(): TranslatorInterface
+    {
+        return $this->translator;
+    }
+
+    /**
      * Runs migration down.
      *
      * @param array $params The command parameters.
@@ -184,6 +194,7 @@ final class Yii3 extends Module
         $containerConfig = ContainerConfig::create()->withDefinitions($definitions);
 
         $this->container = new Container($containerConfig);
+        $this->translator = $this->container->get(TranslatorInterface::class);
 
         $this->setAliases();
     }

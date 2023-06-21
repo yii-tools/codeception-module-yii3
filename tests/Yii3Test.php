@@ -15,6 +15,7 @@ use Yii\Support\Assert;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Translator\TranslatorInterface;
 
 /**
  * Test for Yii3 module.
@@ -79,6 +80,11 @@ final class Yii3Test extends TestCase
     public function testGetContainer(): void
     {
         $this->assertInstanceOf(ContainerInterface::class, $this->module->getContainer());
+    }
+
+    public function testGetTranslator(): void
+    {
+        $this->assertInstanceOf(TranslatorInterface::class, $this->module->getTranslator());
     }
 
     /**
