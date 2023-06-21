@@ -8,10 +8,8 @@ use Codeception\Exception\ModuleException;
 use Codeception\Lib\Di;
 use Codeception\Lib\ModuleContainer;
 use Codeception\PHPUnit\TestCase;
-use Codeception\TestInterface;
 use Psr\Container\ContainerInterface;
 use Yii\Codeception\Module\Yii3;
-use Yii\Support\Assert;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\UrlGeneratorInterface;
@@ -54,18 +52,6 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('site/index');
     }
 
-    public function testBefore(): void
-    {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->module->get(UrlGeneratorInterface::class);
-        /** @var TestInterface $testInterface */
-        $testInterface = $this->createMock(TestInterface::class);
-
-        $this->module->_before($testInterface);
-
-        $this->assertSame(['_language' => 'en'], Assert::inaccessibleProperty($urlGenerator, 'defaultArguments'));
-    }
-
     public function testGet(): void
     {
         $this->assertInstanceOf(UrlGeneratorInterface::class, $this->module->get(UrlGeneratorInterface::class));
@@ -104,6 +90,9 @@ final class Yii3Test extends TestCase
 
     public function testTranslate(): void
     {
-        $this->assertSame('site.title', $this->module->translate('site.title'));
+        $this->module->setArgumentRoute('language');
+        $this->module->setLocale('es');
+
+        $this->assertSame('', $this->module->amOnRoute('home'));
     }
 }

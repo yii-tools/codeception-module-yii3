@@ -31,12 +31,13 @@ use function array_merge;
  */
 final class Yii3 extends Module
 {
+    private string $argumentRoute = '_language';
+    private string $locale = 'en';
+
     protected array $config = [
-        'argumentRoute' => '_language',
         'configPath' => null,
         'environment' => null,
         'namespaceMigration' => [],
-        'locale' => 'en',
         'runtimePath' => '',
         'vendor' => 'vendor',
     ];
@@ -60,21 +61,6 @@ final class Yii3 extends Module
         $this->createContainer();
     }
 
-    public function _before(TestInterface $test): void
-    {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
-        /** @var string $argumentRoute */
-        $argumentRoute = $this->getConfig('argumentRoute') ?? '';
-        /** @var string $locale */
-        $locale = $this->getConfig('locale') ?? '';
-
-        if ($argumentRoute !== '') {
-            $urlGenerator->setDefaultArgument($argumentRoute, $locale);
-            $this->translator->setLocale($locale);
-        }
-    }
-
     /**
      * Navigates to the specified route.
      *
@@ -87,6 +73,9 @@ final class Yii3 extends Module
     {
         /** @var UrlGeneratorInterface $urlGenerator */
         $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
+        $urlGenerator->setDefaultArgument($this->argumentRoute, $this->locale);
+        $this->translator->setLocale($this->locale);
+
         /** @var PhpBrowser $phpBrowser */
         $phpBrowser = $this->phpBrowser();
         $phpBrowser->amOnPage($urlGenerator->generate($url, $params));
@@ -120,17 +109,6 @@ final class Yii3 extends Module
     }
 
     /**
-     * Translates a message into the specified language.
-     *
-     * @param string $id The message ID.
-     * @param string|null $category The message category.
-     */
-    public function translate(string|Stringable $id, string $category = null): string
-    {
-        return $this->translator->translate($id, category: $category);
-    }
-
-    /**
      * Runs migration down.
      *
      * @param array $params The command parameters.
@@ -152,6 +130,27 @@ final class Yii3 extends Module
         $command = $this->createCommand('migrate:up');
 
         return $command->execute($params) === 0;
+    }
+
+    public function setArgumentRoute(string $argumentRoute): void
+    {
+        $this->argumentRoute = $argumentRoute;
+    }
+
+    public function setLocale(string $locale): void
+    {
+        $this->locale = $locale;
+    }
+
+    /**
+     * Translates a message into the specified language.
+     *
+     * @param string $id The message ID.
+     * @param string|null $category The message category.
+     */
+    public function translate(string|Stringable $id, string $category = null): string
+    {
+        return $this->translator->translate($id, category: $category);
     }
 
     /**
