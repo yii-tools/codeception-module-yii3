@@ -131,6 +131,17 @@ final class Yii3 extends Module
         return $command->execute($params) === 0;
     }
 
+    /**
+     * Translates a message into the specified language.
+     *
+     * @param string $id The message ID.
+     * @param string|null $category The message category.
+     */
+    public function seeTranslated(string|Stringable $id, string $category = null): string
+    {
+        return $this->translator->translate($id, category: $category);
+    }
+
     public function setArgumentRoute(string $argumentRoute): void
     {
         $this->argumentRoute = $argumentRoute;
@@ -139,17 +150,6 @@ final class Yii3 extends Module
     public function setLocale(string $locale): void
     {
         $this->locale = $locale;
-    }
-
-    /**
-     * Translates a message into the specified language.
-     *
-     * @param string $id The message ID.
-     * @param string|null $category The message category.
-     */
-    public function translate(string|Stringable $id, string $category = null): string
-    {
-        return $this->translator->translate($id, category: $category);
     }
 
     /**
