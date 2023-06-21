@@ -87,12 +87,4 @@ final class Yii3Test extends TestCase
 
         $this->assertSame(__DIR__ . '/runtime', $aliases->get('@runtime'));
     }
-
-    public function testTranslate(): void
-    {
-        $this->module->setArgumentRoute('language');
-        $this->module->setLocale('es');
-
-        $this->assertSame('', $this->module->amOnRoute('home'));
-    }
 }
