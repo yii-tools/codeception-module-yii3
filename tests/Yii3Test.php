@@ -82,11 +82,6 @@ final class Yii3Test extends TestCase
         $this->assertInstanceOf(ContainerInterface::class, $this->module->getContainer());
     }
 
-    public function testGetTranslator(): void
-    {
-        $this->assertInstanceOf(TranslatorInterface::class, $this->module->getTranslator());
-    }
-
     /**
      * @depends testMigrationUp
      */
@@ -106,5 +101,10 @@ final class Yii3Test extends TestCase
         $aliases = $this->module->get(Aliases::class);
 
         $this->assertSame(__DIR__ . '/runtime', $aliases->get('@runtime'));
+    }
+
+    public function testTranslate(): void
+    {
+        $this->assertSame('site.title', $this->module->translate('site.title'));
     }
 }

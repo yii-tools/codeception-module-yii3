@@ -10,6 +10,7 @@ use Codeception\Module\PhpBrowser;
 use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
+use Stringable;
 use Symfony\Component\Console\Tester\CommandTester;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\Config;
@@ -118,11 +119,14 @@ final class Yii3 extends Module
     }
 
     /**
-     * Return the translator instance for Yii3 application.
+     * Translates a message into the specified language.
+     *
+     * @param string $id The message ID.
+     * @param string|null $category The message category.
      */
-    public function getTranslator(): TranslatorInterface
+    public function translate(string|Stringable $id, string $category = null): string
     {
-        return $this->translator;
+        return $this->translator->translate($id, category: $category);
     }
 
     /**
