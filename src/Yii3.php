@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yii\Codeception\Module;
 
+use Codeception\Lib\InnerBrowser;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module;
 use Codeception\Module\PhpBrowser;
@@ -28,7 +29,7 @@ use function array_merge;
 /**
  * Yii3 is a Codeception module for testing Yii3 applications.
  */
-final class Yii3 extends Module
+final class Yii3 extends InnerBrowser
 {
     private string $argumentRoute = '_language';
     private string $locale = 'en';
@@ -137,9 +138,9 @@ final class Yii3 extends Module
      * @param string $id The message ID.
      * @param string|null $category The message category.
      */
-    public function seeTranslated(string|Stringable $id, string $category = null): string
+    public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
     {
-        return $this->translator->translate($id, category: $category);
+        return $this->see($this->translator->translate($id, category: $category), $selector);
     }
 
     public function setArgumentRoute(string $argumentRoute): void
