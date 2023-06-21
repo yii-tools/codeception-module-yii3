@@ -71,6 +71,7 @@ final class Yii3 extends Module
 
         if ($argumentRoute !== '') {
             $urlGenerator->setDefaultArgument($argumentRoute, $locale);
+            $this->translator->setLocale($locale);
         }
     }
 
