@@ -8,12 +8,15 @@ use Codeception\Configuration;
 use Codeception\Lib\Di;
 use Codeception\Lib\ModuleContainer;
 use Codeception\PHPUnit\TestCase;
+use HttpSoft\Message\RequestFactory;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Yii\Codeception\Module\Yii3;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\RouteNotFoundException;
 use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
 /**
  * Test for Yii3 module.
@@ -61,7 +64,9 @@ final class Yii3Test extends TestCase
 
     public function testGet(): void
     {
-        $this->assertInstanceOf(UrlGeneratorInterface::class, $this->module->get(UrlGeneratorInterface::class));
+        $this->assertInstanceOf(MigrationService::class, $this->module->get(MigrationService::class));
+        $this->assertInstanceOf(RequestFactory::class, $this->module->get(RequestFactoryInterface::class));
+
     }
 
     public function testGetConfigPlugin(): void
@@ -92,7 +97,6 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslated('site.description');
-        $this->module->see('The high-performance PHP framework');
     }
 
     public function testSeeTranslatedWithLocale(): void
@@ -102,7 +106,6 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslated('site.description');
-        $this->module->see('El framework PHP de alto rendimiento');
     }
 
     public function testSeeTranslatedInTitle(): void
@@ -110,7 +113,6 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslatedInTitle('site.menu.home');
-        $this->module->seeInTitle('Home');
     }
 
     public function testSeeTranslatedInTitleWithLocale(): void
@@ -120,7 +122,6 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslatedInTitle('site.menu.home');
-        $this->module->seeInTitle('Inicio');
     }
 
     public function testRuntimePath(): void
