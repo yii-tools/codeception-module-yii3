@@ -35,9 +35,9 @@ final class Yii3 extends PhpBrowser
     protected array $config = [
         // yii3 module config
         'configPath' => 'config',
-        'environment' => null,
+        'environment' => '',
         'namespaceMigration' => [],
-        'rootPath' => null,
+        'rootPath' => '',
         'runtimePath' => '',
         'vendorPath' => 'vendor',
 
@@ -216,14 +216,13 @@ final class Yii3 extends PhpBrowser
     private function createContainer(): void
     {
         /** @var string $configPath */
-        $configPath = $this->getConfig('configPath') ?? '';
+        $configPath = $this->getConfig('configPath');
         /** @var string $rootPath */
-        $rootPath = $this->getConfig('rootPath') ?? '';
-
-        /** @var string|null $environment */
-        $environment = $this->getConfig('environment') ?? '';
-        /** @var string $vendor */
-        $vendorPath = $this->getConfig('vendorPath') ?? '';
+        $rootPath = $this->getConfig('rootPath');
+        /** @var string $environment */
+        $environment = $this->getConfig('environment');
+        /** @var string $vendorPath */
+        $vendorPath = $this->getConfig('vendorPath');
 
         $this->configPlugin = new Config(
             new ConfigPaths($rootPath, $configPath, $vendorPath),
