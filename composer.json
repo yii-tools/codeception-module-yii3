@@ -56,9 +56,9 @@
             "dev-main": "1.0.x-dev"
         },
         "config-plugin-options": {
-            "source-directory": "tests/data/config"
+            "source-directory": "tests/_data/config"
         },
-        "config-plugin-file": "/tests/data/config-plugin.php"
+        "config-plugin-file": "/tests/_data/config-plugin.php"
     },
     "config": {
         "sort-packages": true,
