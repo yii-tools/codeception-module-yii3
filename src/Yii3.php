@@ -6,6 +6,7 @@ namespace Yii\Codeception\Module;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\PhpBrowser;
+use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Stringable;
@@ -60,6 +61,7 @@ final class Yii3 extends PhpBrowser
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
     private TranslatorInterface $translator;
+    private UrlGeneratorInterface $urlGenerator;
 
     /**
      * Constructor.
@@ -73,8 +75,18 @@ final class Yii3 extends PhpBrowser
     public function __construct(ModuleContainer $moduleContainer, array|null $config = null)
     {
         parent::__construct($moduleContainer, $config);
+    }
 
-        $this->createContainer();
+    public function _initialize()
+    {
+        parent::_initialize();
+
+        $this->container = $this->createContainer();
+        $this->translator = $this->container->get(TranslatorInterface::class);
+        $this->urlGenerator = $this->container->get(UrlGeneratorInterface::class);
+
+        $this->setAliases();
+        $this->setUrlDefaultArg();
     }
 
     /**
@@ -87,12 +99,7 @@ final class Yii3 extends PhpBrowser
      */
     public function amOnRoute(string $url, array $params = []): void
     {
-        /** @var UrlGeneratorInterface $urlGenerator */
-        $urlGenerator = $this->container->get(UrlGeneratorInterface::class);
-        $urlGenerator->setDefaultArgument($this->argumentRoute, $this->locale);
-        $this->translator->setLocale($this->locale);
-
-        $this->amOnPage($urlGenerator->generate($url, $params));
+        $this->amOnPage($this->urlGenerator->generate($url, $params));
     }
 
     /**
@@ -181,6 +188,9 @@ final class Yii3 extends PhpBrowser
     public function setLocale(string $locale): void
     {
         $this->locale = $locale;
+        $this->translator->setLocale($locale);
+
+        $this->setUrlDefaultArg();
     }
 
     public function translate(
@@ -218,7 +228,7 @@ final class Yii3 extends PhpBrowser
      * @throws ErrorException
      * @throws \Yiisoft\Definitions\Exception\InvalidConfigException
      */
-    private function createContainer(): void
+    private function createContainer(): ContainerInterface
     {
         /** @var string $configPath */
         $configPath = $this->getConfig('configPath');
@@ -238,10 +248,7 @@ final class Yii3 extends PhpBrowser
         $definitions = array_merge($this->configPlugin->get('di-console'), $this->configPlugin->get('di-web'));
         $containerConfig = ContainerConfig::create()->withDefinitions($definitions);
 
-        $this->container = new Container($containerConfig);
-        $this->translator = $this->container->get(TranslatorInterface::class);
-
-        $this->setAliases();
+        return new Container($containerConfig);
     }
 
     /**
@@ -256,10 +263,24 @@ final class Yii3 extends PhpBrowser
 
     private function setAliases(): void
     {
-        if ($this->getConfig('runtimePath') !== '') {
-            /** @var Aliases $aliases */
-            $aliases = $this->container->get(Aliases::class);
-            $aliases->set('@runtime', (string) $this->getConfig('runtimePath'));
+        /** @var Aliases $aliases */
+        $aliases = $this->get(Aliases::class);
+        /** @var string $rootPath */
+        $rootPath = $this->getConfig('rootPath');
+        /** @var string $runtimePath */
+        $runtimePath = $this->getConfig('runtimePath');
+
+        if ($rootPath !== '') {
+            $aliases->set('@root', $rootPath);
         }
+
+        if ($runtimePath !== '') {
+            $aliases->set('@runtime', $runtimePath);
+        }
+    }
+
+    private function setUrlDefaultArg(): void
+    {
+        $this->urlGenerator->setDefaultArgument($this->argumentRoute, $this->locale);
     }
 }
