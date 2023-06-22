@@ -6,6 +6,7 @@ namespace Yii\Codeception\Module;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\PhpBrowser;
+use Codeception\TestInterface;
 use ErrorException;
 use Psr\Container\ContainerInterface;
 use Stringable;
@@ -26,6 +27,8 @@ use function array_merge;
 
 /**
  * Yii3 is a Codeception module for testing Yii3 applications.
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 final class Yii3 extends PhpBrowser
 {
@@ -76,12 +79,14 @@ final class Yii3 extends PhpBrowser
         parent::__construct($moduleContainer, $config);
     }
 
-    public function _initialize()
+    public function _initialize(): void
     {
         parent::_initialize();
 
         $this->container = $this->createContainer();
+        /** @psalm-var TranslatorInterface */
         $this->translator = $this->container->get(TranslatorInterface::class);
+        /** @psalm-var UrlGeneratorInterface */
         $this->urlGenerator = $this->container->get(UrlGeneratorInterface::class);
 
         $this->setAliases();
