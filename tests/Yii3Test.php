@@ -35,7 +35,7 @@ final class Yii3Test extends TestCase
         $this->module = new Yii3(
             new ModuleContainer(new Di(), []),
             [
-                'configPath' => 'tests/data/config',
+                'configPath' => 'tests/_data/config',
                 'rootPath' => dirname(__DIR__),
                 'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
                 'runtimePath' => __DIR__ . '/runtime',
@@ -111,6 +111,13 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslatedInTitle('site.menu.home');
+    }
+
+    public function testTranslate(): void
+    {
+        $this->module->amOnRoute('home');
+
+        $this->assertSame('Home', $this->module->translate('site.menu.home'));
     }
 
     public function testSeeTranslatedInTitleWithLocale(): void

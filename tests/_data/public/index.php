@@ -41,7 +41,7 @@ require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
  * Run HTTP application runner.
  */
 (new HttpApplication())
-    ->withConfigPath('/tests/data/config')
+    ->withConfigPath('/tests/_data/config')
     ->withPublicPath(__DIR__)
     ->withRootPath(dirname(__DIR__, 3))
     ->withRuntimePath('@root/tests/_output/runtime')

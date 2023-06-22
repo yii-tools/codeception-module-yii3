@@ -32,6 +32,6 @@ return [
         ],
     ],
     'config-plugin-options' => [
-        'source-directory' => 'tests/data/config',
+        'source-directory' => 'tests/_data/config',
     ],
 ];
