@@ -157,7 +157,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
     {
-        $this->see($this->translator->translate($id, category: $category), $selector);
+        $this->see($this->translate($id, $category), $selector);
     }
 
     /**
@@ -170,7 +170,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslatedInTitle(string|Stringable $id, string $category = null): void
     {
-        $this->seeInTitle($this->translator->translate($id, category: $category));
+        $this->seeInTitle($this->translate($id, $category));
     }
 
     public function setArgumentRoute(string $argumentRoute): void
@@ -181,6 +181,15 @@ final class Yii3 extends PhpBrowser
     public function setLocale(string $locale): void
     {
         $this->locale = $locale;
+    }
+
+    public function translate(
+        string|Stringable $id,
+        string $category = null,
+        array $params = [],
+        string $language = null
+    ): string {
+        return $this->translator->translate($id, $params, $category, $language);
     }
 
     /**
