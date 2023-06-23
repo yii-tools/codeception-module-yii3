@@ -128,6 +128,15 @@ final class Yii3Test extends TestCase
         $this->assertSame('Home', $this->module->translate('site.menu.home'));
     }
 
+    public function testSetTranslatedDefaultCategory(): void
+    {
+        $this->module->setTranslatedDefaultCategory('app');
+
+        $this->module->amOnRoute('home');
+
+        $this->module->seeTranslated('site.menu.home');
+    }
+
     public function testSeeTranslatedInTitleWithLocale(): void
     {
         $this->module->setLocale('es');

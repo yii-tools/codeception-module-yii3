@@ -196,17 +196,37 @@ final class Yii3 extends PhpBrowser
         $this->seeInTitle($this->translate($id, $category));
     }
 
+    /**
+     * Set the argument name for the route.
+     *
+     * @param string $argumentRoute The argument name for the route.
+     */
     public function setArgumentRoute(string $argumentRoute): void
     {
         $this->argumentRoute = $argumentRoute;
     }
 
+    /**
+     * Set the locale for the application.
+     *
+     * @param string $locale The locale for the application.
+     */
     public function setLocale(string $locale): void
     {
         $this->locale = $locale;
         $this->translator->setLocale($locale);
 
         $this->setUrlDefaultArg();
+    }
+
+    /**
+     * Set the translated default category.
+     *
+     * @param string $category The translated default category.
+     */
+    public function setTranslatedDefaultCategory(string $category): void
+    {
+        $this->translator = $this->translator->withDefaultCategory($category);
     }
 
     public function translate(
