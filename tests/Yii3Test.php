@@ -12,7 +12,6 @@ use HttpSoft\Message\RequestFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Yii\Codeception\Module\Yii3;
-use Yiisoft\Aliases\Aliases;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\RouteNotFoundException;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
