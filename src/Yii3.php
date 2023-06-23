@@ -31,6 +31,7 @@ use function array_merge;
  */
 final class Yii3 extends PhpBrowser
 {
+    private Aliases $aliaseds;
     private string $argumentRoute = '_language';
     private string $locale = 'en';
 
@@ -39,6 +40,7 @@ final class Yii3 extends PhpBrowser
         'configPath' => 'config',
         'environment' => '',
         'namespaceMigration' => [],
+        'publicPath' => '',
         'rootPath' => '',
         'runtimePath' => '',
         'vendorPath' => 'vendor',
@@ -83,6 +85,8 @@ final class Yii3 extends PhpBrowser
         parent::_initialize();
 
         $this->container = $this->createContainer();
+        /** @psalm-var Aliases $aliaseds */
+        $this->aliaseds = $this->container->get(Aliases::class);
         /** @psalm-var TranslatorInterface */
         $this->translator = $this->container->get(TranslatorInterface::class);
         /** @psalm-var UrlGeneratorInterface */
@@ -90,6 +94,14 @@ final class Yii3 extends PhpBrowser
 
         $this->setAliases();
         $this->setUrlDefaultArg();
+    }
+
+    /**
+     * @return string Translates a path alias into an actual path.
+     */
+    public function alias(string $alias): string
+    {
+        return $this->aliaseds->get($alias);
     }
 
     /**
@@ -268,17 +280,23 @@ final class Yii3 extends PhpBrowser
     {
         /** @var Aliases $aliases */
         $aliases = $this->get(Aliases::class);
+        /** @var string $publicPath */
+        $publicPath = $this->getConfig('publicPath');
         /** @var string $rootPath */
         $rootPath = $this->getConfig('rootPath');
         /** @var string $runtimePath */
         $runtimePath = $this->getConfig('runtimePath');
 
+        if ($publicPath !== '') {
+            $this->aliaseds->set('@public', $publicPath);
+        }
+
         if ($rootPath !== '') {
-            $aliases->set('@root', $rootPath);
+            $this->aliaseds->set('@root', $rootPath);
         }
 
         if ($runtimePath !== '') {
-            $aliases->set('@runtime', $runtimePath);
+            $this->aliaseds->set('@runtime', $runtimePath);
         }
     }
 

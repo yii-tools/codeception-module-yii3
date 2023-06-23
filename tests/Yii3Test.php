@@ -38,7 +38,8 @@ final class Yii3Test extends TestCase
                 'configPath' => 'tests/_data/config',
                 'rootPath' => dirname(__DIR__),
                 'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
-                'runtimePath' => __DIR__ . '/runtime',
+                'publicPath' => '@root/tests/_data/public',
+                'runtimePath' => '@root/tests/runtime',
                 'vendor' => '../../../vendor',
             ],
         );
@@ -51,6 +52,14 @@ final class Yii3Test extends TestCase
         parent::tearDown();
 
         unset($this->module);
+    }
+
+    public function testAliases(): void
+    {
+        $this->assertSame(dirname(__DIR__), $this->module->alias('@root'));
+        $this->assertSame(dirname(__DIR__) . '/tests/_data/public', $this->module->alias('@public'));
+        $this->assertSame(dirname(__DIR__) . '/tests/runtime', $this->module->alias('@runtime'));
+        $this->assertSame(dirname(__DIR__) . '/vendor', $this->module->alias('@vendor'));
     }
 
     public function testAmOnRoute(): void
@@ -127,13 +136,5 @@ final class Yii3Test extends TestCase
         $this->module->amOnRoute('home');
 
         $this->module->seeTranslatedInTitle('site.menu.home');
-    }
-
-    public function testRuntimePath(): void
-    {
-        /** @var Aliases $aliases */
-        $aliases = $this->module->get(Aliases::class);
-
-        $this->assertSame(__DIR__ . '/runtime', $aliases->get('@runtime'));
     }
 }
