@@ -85,12 +85,13 @@ final class Yii3 extends PhpBrowser
         parent::_initialize();
 
         $this->container = $this->createContainer();
+
         /** @psalm-var Aliases */
-        $this->aliaseds = $this->container->get(Aliases::class);
+        $this->aliaseds = $this->get(Aliases::class);
         /** @psalm-var TranslatorInterface */
-        $this->translator = $this->container->get(TranslatorInterface::class);
+        $this->translator = $this->get(TranslatorInterface::class);
         /** @psalm-var UrlGeneratorInterface */
-        $this->urlGenerator = $this->container->get(UrlGeneratorInterface::class);
+        $this->urlGenerator = $this->get(UrlGeneratorInterface::class);
 
         $this->setAliases();
         $this->setUrlDefaultArg();
