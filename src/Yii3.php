@@ -29,7 +29,7 @@ use function array_merge;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class Yii3 extends PhpBrowser
+final class Yii3 extends \Codeception\Module
 {
     private Aliases $aliaseds;
     private string $argumentRoute = '_language';
@@ -63,6 +63,7 @@ final class Yii3 extends PhpBrowser
     ];
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
+    private PhpBrowser $phpBrowser;
     private TranslatorInterface $translator;
     private UrlGeneratorInterface $urlGenerator;
 
@@ -82,7 +83,8 @@ final class Yii3 extends PhpBrowser
 
     public function _initialize(): void
     {
-        parent::_initialize();
+        $this->phpBrowser = new PhpBrowser($this->moduleContainer, $this->config);
+        $this->phpBrowser->_initialize();
 
         $this->container = $this->createContainer();
 
@@ -115,7 +117,7 @@ final class Yii3 extends PhpBrowser
      */
     public function amOnRoute(string $url, array $params = []): void
     {
-        $this->amOnPage($this->urlGenerator->generate($url, $params));
+        $this->phpBrowser->amOnPage($this->urlGenerator->generate($url, $params));
     }
 
     /**
@@ -180,7 +182,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
     {
-        $this->see($this->translate($id, $category), $selector);
+        $this->phpBrowser->see($this->translate($id, $category), $selector);
     }
 
     /**
@@ -193,7 +195,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslatedInTitle(string|Stringable $id, string $category = null): void
     {
-        $this->seeInTitle($this->translate($id, $category));
+        $this->phpBrowser->seeInTitle($this->translate($id, $category));
     }
 
     /**
@@ -299,8 +301,6 @@ final class Yii3 extends PhpBrowser
 
     private function setAliases(): void
     {
-        /** @var Aliases $aliases */
-        $aliases = $this->get(Aliases::class);
         /** @var string $publicPath */
         $publicPath = $this->getConfig('publicPath');
         /** @var string $rootPath */
