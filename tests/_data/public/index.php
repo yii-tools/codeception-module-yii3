@@ -4,14 +4,6 @@ declare(strict_types=1);
 
 use Yii\Framework\Runner\HttpApplication;
 
-if (getenv('YII_C3')) {
-    $c3 = dirname(__DIR__, 3) . '/c3.php';
-
-    if (file_exists($c3)) {
-        require_once $c3;
-    }
-}
-
 /**
  * @psalm-var string $_SERVER['REQUEST_URI']
  *
