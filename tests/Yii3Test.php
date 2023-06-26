@@ -12,7 +12,7 @@ use Codeception\Test\Unit;
 use HttpSoft\Message\RequestFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Yii\Codeception\Yii3;
+use Yii\Codeception\Module\Yii3;
 use Yiisoft\Config\ConfigInterface;
 use Yiisoft\Router\RouteNotFoundException;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
@@ -42,7 +42,7 @@ final class Yii3Test extends Unit
             $moduleContainer,
             [
                 'configPath' => 'tests/_data/config',
-                'namespaceMigration' => ['Yii\\Codeception\\Tests\\Support'],
+                'namespaceMigration' => ['Yii\\Codeception\\Module\Tests\\Support'],
                 'publicPath' => '@root/tests/_data/public',
                 'rootPath' => dirname(__DIR__, 1),
                 'runtimePath' => '@root/tests/runtime',
