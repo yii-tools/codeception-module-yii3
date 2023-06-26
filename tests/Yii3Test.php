@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Yii\Codeception\Module\Tests;
+namespace Yii\Codeception\Tests\Unit;
 
 use Codeception\Configuration;
 use Codeception\Lib\Di;
 use Codeception\Lib\ModuleContainer;
-use Codeception\PHPUnit\TestCase;
+use Codeception\Module\PhpBrowser;
+use Codeception\Test\Unit;
 use HttpSoft\Message\RequestFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -17,31 +18,38 @@ use Yiisoft\Router\RouteNotFoundException;
 use Yiisoft\Yii\Db\Migration\Service\MigrationService;
 
 /**
- * Test for Yii3 module.
+ * Test unit for module `Yii3`.
  */
-final class Yii3Test extends TestCase
+final class Yii3Test extends Unit
 {
     private Yii3 $module;
 
     public function setup(): void
     {
-        parent::setUp();
-
         // configure output path
         Configuration::append(['paths' => ['output' => __DIR__ . '/_output']]);
 
+        $moduleContainer = new ModuleContainer(new Di(), []);
+
+        $phpBrowser = new PhpBrowser($moduleContainer);
+        $url = 'http://localhost:8080';
+
+        $phpBrowser->_setConfig(['url' => $url]);
+        $phpBrowser->_initialize();
+
         // configure yii3 module
         $this->module = new Yii3(
-            new ModuleContainer(new Di(), []),
+            $moduleContainer,
             [
                 'configPath' => 'tests/_data/config',
-                'rootPath' => dirname(__DIR__),
-                'namespaceMigration' => ['Yii\\Codeception\\Module\\Tests\\Support'],
+                'namespaceMigration' => ['Yii\\Codeception\\Module\Tests\\Support'],
                 'publicPath' => '@root/tests/_data/public',
+                'rootPath' => dirname(__DIR__, 1),
                 'runtimePath' => '@root/tests/runtime',
                 'vendor' => '../../../vendor',
             ],
         );
+        $this->module->_inject($phpBrowser);
         $this->module->_initialize();
         $this->module->setArgumentRoute('_language');
     }

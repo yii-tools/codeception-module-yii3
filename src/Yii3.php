@@ -29,14 +29,13 @@ use function array_merge;
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
-final class Yii3 extends PhpBrowser
+final class Yii3 extends \Codeception\Module
 {
     private Aliases $aliaseds;
     private string $argumentRoute = '_language';
     private string $locale = 'en';
 
     protected array $config = [
-        // yii3 module config
         'configPath' => 'config',
         'environment' => '',
         'namespaceMigration' => [],
@@ -44,25 +43,10 @@ final class Yii3 extends PhpBrowser
         'rootPath' => '',
         'runtimePath' => '',
         'vendorPath' => 'vendor',
-
-        // curl module config
-        'curl' => [],
-        'expect' => false,
-        'handler' => 'curl',
-        'headers' => [],
-        'middleware' => null,
-        'refresh_max_interval' => 10,
-        'timeout' => 30,
-        'url' => 'http://localhost:8080',
-        'verify' => false,
-
-        // required defaults (not recommended to change)
-        'allow_redirects' => false,
-        'http_errors' => false,
-        'cookies' => true,
     ];
     private ContainerInterface $container;
     private ConfigInterface $configPlugin;
+    private PhpBrowser|null $phpBrowser = null;
     private TranslatorInterface $translator;
     private UrlGeneratorInterface $urlGenerator;
 
@@ -82,8 +66,6 @@ final class Yii3 extends PhpBrowser
 
     public function _initialize(): void
     {
-        parent::_initialize();
-
         $this->container = $this->createContainer();
 
         /** @psalm-var Aliases */
@@ -95,6 +77,11 @@ final class Yii3 extends PhpBrowser
 
         $this->setAliases();
         $this->setUrlDefaultArg();
+    }
+
+    public function _inject(PhpBrowser $phpBrowser): void
+    {
+        $this->phpBrowser = $phpBrowser;
     }
 
     /**
@@ -115,7 +102,7 @@ final class Yii3 extends PhpBrowser
      */
     public function amOnRoute(string $url, array $params = []): void
     {
-        $this->amOnPage($this->urlGenerator->generate($url, $params));
+        $this->getPhpBrowser()->amOnPage($this->urlGenerator->generate($url, $params));
     }
 
     /**
@@ -180,7 +167,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslated(string|Stringable $id, string $category = null, array|string $selector = null): void
     {
-        $this->see($this->translate($id, $category), $selector);
+        $this->getPhpBrowser()->see($this->translate($id, $category), $selector);
     }
 
     /**
@@ -193,7 +180,7 @@ final class Yii3 extends PhpBrowser
      */
     public function seeTranslatedInTitle(string|Stringable $id, string $category = null): void
     {
-        $this->seeInTitle($this->translate($id, $category));
+        $this->getPhpBrowser()->seeInTitle($this->translate($id, $category));
     }
 
     /**
@@ -297,10 +284,18 @@ final class Yii3 extends PhpBrowser
         return $this->config[$key] ?? null;
     }
 
+    private function getPhpBrowser(): PhpBrowser
+    {
+        if ($this->phpBrowser !== null) {
+            return $this->phpBrowser;
+        }
+
+        /** @psalm-var PhpBrowser */
+        return $this->getModule('PhpBrowser');
+    }
+
     private function setAliases(): void
     {
-        /** @var Aliases $aliases */
-        $aliases = $this->get(Aliases::class);
         /** @var string $publicPath */
         $publicPath = $this->getConfig('publicPath');
         /** @var string $rootPath */
