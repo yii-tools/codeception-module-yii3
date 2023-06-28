@@ -41,7 +41,7 @@ final class Yii3 extends \Codeception\Module
         'environment' => '',
         'namespaceMigration' => [],
         'publicPath' => '',
-        'paramsGroups' => ['params', 'application-params'],
+        'paramsGroups' => ['application-params', 'params', 'params-console', 'params-web'],
         'rootPath' => '',
         'runtimePath' => '',
         'vendorPath' => 'vendor',
