@@ -257,11 +257,11 @@ final class Yii3 extends \Codeception\Module
     {
         /** @var string $configPath */
         $configPath = $this->getConfig('configPath');
-        /** @var array $eventsGroup */
+        /** @psalm-var string[] $eventsGroup */
         $eventsGroup = $this->getConfig('eventsGroups');
         /** @var string $environment */
         $environment = $this->getConfig('environment');
-        /** @var array $paramsGroup */
+        /** @psalm-var string[] $paramsGroup */
         $paramsGroup = $this->getConfig('paramsGroups');
         /** @var string $rootPath */
         $rootPath = $this->getConfig('rootPath');
