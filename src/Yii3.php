@@ -37,9 +37,11 @@ final class Yii3 extends \Codeception\Module
 
     protected array $config = [
         'configPath' => 'config',
+        'eventsGroups' => ['events'],
         'environment' => '',
         'namespaceMigration' => [],
         'publicPath' => '',
+        'paramsGroups' => ['params', 'application-params'],
         'rootPath' => '',
         'runtimePath' => '',
         'vendorPath' => 'vendor',
@@ -255,17 +257,21 @@ final class Yii3 extends \Codeception\Module
     {
         /** @var string $configPath */
         $configPath = $this->getConfig('configPath');
-        /** @var string $rootPath */
-        $rootPath = $this->getConfig('rootPath');
+        /** @psalm-var string[] $eventsGroup */
+        $eventsGroup = $this->getConfig('eventsGroups');
         /** @var string $environment */
         $environment = $this->getConfig('environment');
+        /** @psalm-var string[] $paramsGroup */
+        $paramsGroup = $this->getConfig('paramsGroups');
+        /** @var string $rootPath */
+        $rootPath = $this->getConfig('rootPath');
         /** @var string $vendorPath */
         $vendorPath = $this->getConfig('vendorPath');
 
         $this->configPlugin = new Config(
             new ConfigPaths($rootPath, $configPath, $vendorPath),
             $environment,
-            [RecursiveMerge::groups('params'), RecursiveMerge::groups('events')]
+            [RecursiveMerge::groups(...$paramsGroup), RecursiveMerge::groups(...$eventsGroup)]
         );
 
         $definitions = array_merge($this->configPlugin->get('di-console'), $this->configPlugin->get('di-web'));
