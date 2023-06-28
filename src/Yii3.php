@@ -37,8 +37,8 @@ final class Yii3 extends \Codeception\Module
 
     protected array $config = [
         'configPath' => 'config',
-        'eventsGroups' => ['events'],
         'environment' => '',
+        'eventsGroups' => ['events', 'events-console', 'events-web'],
         'namespaceMigration' => [],
         'publicPath' => '',
         'paramsGroups' => ['application-params', 'params', 'params-console', 'params-web'],
